@@ -2,6 +2,9 @@
 
 namespace Als\Belajar\PHP\MVC\Service;
 
+use Als\Belajar\PHP\MVC\Config\Database;
+use Als\Belajar\PHP\MVC\Domain\User;
+use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
@@ -47,7 +50,6 @@ class UserService
 	{
 		if($request->id == null || $request->name == null || $request->password == null || trim($request->id) == "" || trim($request->name) == ""|| trim($request->password)  == "") {
 			throw new ValidationException("Id, Name, Password can blank");
-			
 		}
 	}
 

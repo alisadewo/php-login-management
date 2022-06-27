@@ -70,7 +70,7 @@ class UserService
 			$response->user = $user;
 			return $response;
 		} else {
-			throw new ValidateException("id or password is wrong");
+			throw new ValidationException("id or password is wrong");
 			
 		}
 	}

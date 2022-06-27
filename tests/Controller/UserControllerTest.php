@@ -90,6 +90,76 @@ namespace Als\Belajar\PHP\MVC\Controller {
 			$this->expectOutputRegex("[Register new User]");
 			$this->expectOutputRegex("[User is already exists]");
 		}
+
+		public function testLoginForm()
+		{
+			$this->userController->login();
+
+			$this->expectOutputRegex("[Id]");
+			$this->expectOutputRegex("[Password]");
+			$this->expectOutputRegex("[Login user]");
+		}
+
+		public function testLoginSuccess()
+		{
+			$user = new User();
+			$user->id = "ali";
+			$user->name = "Ali";
+			$user->password = password_hash("rahasia", PASSWORD_BCRYPT);
+
+			$this->userRepository->save($user);
+
+			$_POST['id'] = 'ali';
+			$_POST['password'] = 'rahasia';
+
+			$this->userController->postLogin();
+
+			$this->expectOutputRegex("[Location: /]");
+		}
+
+		public function testloginValidationError()
+		{
+			$_POST['id'] = '';
+			$_POST['password'] = '';
+			$this->userController->postLogin();
+
+			$this->expectOutputRegex("[Id]");
+			$this->expectOutputRegex("[Password]");
+			$this->expectOutputRegex("[Login user]");
+			$this->expectOutputRegex("[Id, Password can not blank]");
+		}
+
+		public function testLoginUserNotFound()
+		{
+			$_POST['id'] = 'not found';
+			$_POST['password'] = 'not found';
+			$this->userController->postLogin();
+
+			$this->expectOutputRegex("[Id]");
+			$this->expectOutputRegex("[Password]");
+			$this->expectOutputRegex("[Login user]");
+			$this->expectOutputRegex("[id or password is wrong]");
+		}
+
+		public function testLoginWrongPassword()
+		{
+			$user = new User();
+			$user->id = "ali";
+			$user->name = "Ali";
+			$user->password = password_hash("rahasia", PASSWORD_BCRYPT);
+
+			$this->userRepository->save($user);
+
+			$_POST['id'] = 'ali';
+			$_POST['password'] = 'salah';
+			$this->userController->postLogin();
+
+			$this->expectOutputRegex("[Id]");
+			$this->expectOutputRegex("[Password]");
+			$this->expectOutputRegex("[Login user]");
+			$this->expectOutputRegex("[id or password is wrong]");
+		}
+
 	}
 }
 

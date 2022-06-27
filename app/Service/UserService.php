@@ -49,7 +49,7 @@ class UserService
 	private function validateUserRegistrationRequest(UserRegisterRequest $request)
 	{
 		if($request->id == null || $request->name == null || $request->password == null || trim($request->id) == "" || trim($request->name) == ""|| trim($request->password)  == "") {
-			throw new ValidationException("Id, Name, Password can blank");
+			throw new ValidationException("Id, Name, Password can not blank");
 		}
 	}
 

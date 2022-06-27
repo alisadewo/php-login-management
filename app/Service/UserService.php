@@ -7,6 +7,8 @@ use Als\Belajar\PHP\MVC\Domain\User;
 use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
+use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
+use Als\Belajar\PHP\MVC\Model\UserloginResponse;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
 
 class UserService
@@ -50,6 +52,33 @@ class UserService
 	{
 		if($request->id == null || $request->name == null || $request->password == null || trim($request->id) == "" || trim($request->name) == ""|| trim($request->password)  == "") {
 			throw new ValidationException("Id, Name, Password can not blank");
+		}
+	}
+
+	public function login(UserLoginRequest $request): UserloginResponse
+	{
+		$this->validateUserLoginRequest($request);
+
+		$user->userRepository->findById($request->id);
+
+		if($user == null) {
+			throw new ValidationException("id or password is wrong");
+		}
+
+		if(password_verify($request->password, $user->password)) {
+			$response = new UserLoginResponse();
+			$response->user = $user;
+			return $response;
+		} else {
+			throw new ValidateException("id or password is wrong");
+			
+		}
+	}
+
+	private function validateUserLoginRequest(UserLoginRequest $request)
+	{
+		if($request->id == null || $request->password == null || trim($request->id) == "" || trim($request->password)  == "") {
+			throw new ValidationException("Id, Password can not blank");
 		}
 	}
 

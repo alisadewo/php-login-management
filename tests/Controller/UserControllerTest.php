@@ -16,8 +16,10 @@ namespace Als\Belajar\PHP\MVC\Controller {
 	use PHPUnit\Framework\TestCase;
 	use Als\Belajar\PHP\MVC\Config\Database;
 	use Als\Belajar\PHP\MVC\Domain\User;
+	use Als\Belajar\PHP\MVC\Domain\Session;
 	use Als\Belajar\PHP\MVC\Repository\UserRepository;
 	use Als\Belajar\PHP\MVC\Repository\SessionRepository;
+	use Als\Belajar\PHP\MVC\Service\SessionService;
 
 	class UserControllerTest extends TestCase
 	{
@@ -171,6 +173,27 @@ namespace Als\Belajar\PHP\MVC\Controller {
 			$this->expectOutputRegex("[Password]");
 			$this->expectOutputRegex("[Login user]");
 			$this->expectOutputRegex("[id or password is wrong]");
+		}
+
+		public function testLogout()
+		{
+			$user = new User();
+			$user->id = "ali";
+			$user->name = "Ali";
+			$user->password = password_hash("rahasia", PASSWORD_BCRYPT);
+			$this->userRepository->save($user);
+
+			$session = new Session();
+			$session->id = uniqid();
+			$session->userId = $user->id;
+			$this->sessionRepository->save($session);
+
+			$_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+			$this->userController->logout();
+
+			$this->expectOutputRegex("[Location: /]");
+			$this->expectOutputRegex("[X-SESSION: ]");
 		}
 
 	}

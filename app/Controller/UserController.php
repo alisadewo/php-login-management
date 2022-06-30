@@ -8,18 +8,25 @@ use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
+use Als\Belajar\PHP\MVC\Repository\SessionRepository;
 use Als\Belajar\PHP\MVC\Service\UserService;
+use Als\Belajar\PHP\MVC\Service\SessionService;
 use Als\Belajar\PHP\MVC\View\redirect;
 
 class UserController
 {
 	private UserService $userService;
+	private SessionService $sessionService;
 
 	public function __construct()
 	{
 		$connection = Database::getConnection();
 		$userRepository = new UserRepository($connection);
 		$this->userService = new UserService($userRepository);
+
+		$sessionRepository = new SessionRepository($connection);
+		$this->sessionService = new SessionService($sessionRepository, $userRepository);
+
 	}
 
 
@@ -58,12 +65,15 @@ class UserController
 
 	public function postLogin()
 	{
+
+
 		$request = new UserLoginRequest();
 		$request->id = $_POST['id'];
 		$request->password = $_POST['password'];
 
 		try {
-			$this->userService->login($request);
+			$response = $this->userService->login($request);
+			$this->sessionService->create($response->user->id);
 			View::redirect('/');
 		} catch (ValidationException $exception) {
 			View::render('User/login', [

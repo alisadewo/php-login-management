@@ -6,24 +6,36 @@ namespace Als\Belajar\PHP\MVC\App {
 	} 
 }
 
+namespace Als\Belajar\PHP\MVC\Service {
+	function setcookie(string $name, string $value) {
+		echo "$name: $value";
+	}
+}
+
 namespace Als\Belajar\PHP\MVC\Controller {
 	use PHPUnit\Framework\TestCase;
 	use Als\Belajar\PHP\MVC\Config\Database;
 	use Als\Belajar\PHP\MVC\Domain\User;
 	use Als\Belajar\PHP\MVC\Repository\UserRepository;
+	use Als\Belajar\PHP\MVC\Repository\SessionRepository;
 
 	class UserControllerTest extends TestCase
 	{
 		private UserController $userController;
 		private UserRepository $userRepository;
+		private SessionRepository $sessionRepository;
+
 
 		public function setUp(): void
 		{
 			$this->userController = new UserController();
 
 			$connection = Database::getConnection();
+
+			$this->sessionRepository = new SessionRepository($connection);
 			$this->userRepository = new UserRepository($connection);
 
+			$this->sessionRepository->deleteAll();
 			$this->userRepository->deleteAll();
 
 			putenv("mode=test");
@@ -115,6 +127,7 @@ namespace Als\Belajar\PHP\MVC\Controller {
 			$this->userController->postLogin();
 
 			$this->expectOutputRegex("[Location: /]");
+			$this->expectOutputRegex("[X-SESSION: ]");
 		}
 
 		public function testloginValidationError()

@@ -1,8 +1,10 @@
 <?php 
 
 namespace Als\Belajar\PHP\MVC\App {
+
 	function header(string $value) {
 		echo $value;
+		
 	} 
 }
 

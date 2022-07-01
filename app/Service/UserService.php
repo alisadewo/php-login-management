@@ -5,7 +5,8 @@ namespace Als\Belajar\PHP\MVC\Service;
 use Als\Belajar\PHP\MVC\Config\Database;
 use Als\Belajar\PHP\MVC\Domain\User;
 use Als\Belajar\PHP\MVC\Exception\ValidationException;
-use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
+use Als\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
+use Als\Belajar\PHP\MVC\Model\UserProfileUpdateResponse;
 use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
 use Als\Belajar\PHP\MVC\Model\UserloginResponse;
@@ -79,6 +80,39 @@ class UserService
 	{
 		if($request->id == null || $request->password == null || trim($request->id) == "" || trim($request->password)  == "") {
 			throw new ValidationException("Id, Password can not blank");
+		}
+	}
+
+	private function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
+	{
+		$this->validateUserProfileUpdateRequest($request);
+
+		try {
+			Database::beginTransaction();
+
+			$user = $this->userRepository->findById($request->id);
+			if ($user == null) {
+				throw new ValidationException('User is not found');
+			}
+
+			$user->name = $request->name;
+			$this->userRepository->save($user);
+ 
+			Database::commitTransaction();
+
+			$response = new UserProfileUpdateResponse();
+			$response->user = $user;
+			return $response;
+		} catch (\Exception $exception) {
+			Database::rollbackTransaction();
+			throw $exception;
+		}
+	}
+
+	private function validateUserProfileUpdateRequest(UserProfileUpdateRequest $request)
+	{
+		if($request->id == null || $request->name == null || trim($request->id) == "" || trim($request->name)  == "") {
+			throw new ValidationException("Id, Name can not blank");
 		}
 	}
 

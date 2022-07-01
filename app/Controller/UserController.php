@@ -7,6 +7,7 @@ use Als\Belajar\PHP\MVC\Config\Database;
 use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
+use Als\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
 use Als\Belajar\PHP\MVC\Repository\SessionRepository;
 use Als\Belajar\PHP\MVC\Service\UserService;
@@ -26,9 +27,7 @@ class UserController
 
 		$sessionRepository = new SessionRepository($connection);
 		$this->sessionService = new SessionService($sessionRepository, $userRepository);
-
 	}
-
 
 	public function register()
 	{
@@ -81,12 +80,49 @@ class UserController
 				'error' => $exception->getMessage()
 			]);
 		}
-		
 	}
 
 	public function logout()
 	{
 		$this->sessionService->destroy();
 		View::redirect("/");
+	}
+
+	public function updateProfile()
+	{
+		$user = $this->sessionService->current();
+
+		View::render('User/profile', [
+			"title" => "Update user profile",
+			"user" => [
+				"id" => $user->id,
+				"name" => $user->name,
+			]
+		]);
+	}
+
+	public function postUpdateProfile()
+	{
+		$user = $this->sessionService->current();
+
+		$request = new UserProfileUpdateRequest();
+		$request->id = $user->id;
+		$request->name = $_POST['name'];
+
+		$this->userService->updateProfile($request);
+
+		try {
+			$this->userService->updateProfile($request);
+			View::redirect('/');
+		} catch (ValidationException $exception) {
+			View::render('User/profile', [
+				"title" => "Update user profile",
+				"error" => $exception->getMessage(),
+				"user" => [
+					"id" => $user->id,
+					"name" => $_POST['name']
+				]
+			]);
+		}
 	}
 }

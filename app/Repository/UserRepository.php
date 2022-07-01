@@ -30,7 +30,7 @@ class UserRepository
 		$statement->execute([
 			$user->name, $user->password, $user->id
 		]);
-		return $User;
+		return $user;
 	}
 
 	public function findById(string $id): ?User

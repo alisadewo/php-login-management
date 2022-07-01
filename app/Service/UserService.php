@@ -8,6 +8,7 @@ use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
 use Als\Belajar\PHP\MVC\Model\UserProfileUpdateResponse;
 use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
+use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
 use Als\Belajar\PHP\MVC\Model\UserloginResponse;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
@@ -22,33 +23,33 @@ class UserService
 	}
 
 	public function register(UserRegisterRequest $request): UserRegisterResponse
-	{
-		$this->validateUserRegistrationRequest($request);
+    {
+        $this->validateUserRegistrationRequest($request);
 
-		try {
-			Database::beginTransaction();
-			$user = $this->userRepository->findById($request->id);
-			if($user != null) {
-				throw new ValidationException("User is already exists");
-			}
+        try {
+            Database::beginTransaction();
+            $user = $this->userRepository->findById($request->id);
+            if ($user != null) {
+                throw new ValidationException("User Id already exists");
+            }
 
-			$user = new User();
-			$user->id = $request->id;
-			$user->name = $request->name;
-			$user->password = password_hash($request->password, PASSWORD_BCRYPT);
+            $user = new User();
+            $user->id = $request->id;
+            $user->name = $request->name;
+            $user->password = password_hash($request->password, PASSWORD_BCRYPT);
 
-			$this->userRepository->save($user);
+            $this->userRepository->save($user);
 
-			$response = new UserRegisterResponse();
-			$response->user = $user;
-			Database::commitTransaction();
-			return $response;
-		} catch (\Exception $exception) {
-			Database::rollbackTransaction();
-			throw $exception;
-		}
-	}
+            $response = new UserRegisterResponse();
+            $response->user = $user;
 
+            Database::commitTransaction();
+            return $response;
+        } catch (\Exception $exception) {
+            Database::rollbackTransaction();
+            throw $exception;
+        }
+    }
 	private function validateUserRegistrationRequest(UserRegisterRequest $request)
 	{
 		if($request->id == null || $request->name == null || $request->password == null || trim($request->id) == "" || trim($request->name) == ""|| trim($request->password)  == "") {
@@ -83,7 +84,7 @@ class UserService
 		}
 	}
 
-	private function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
+	public function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
 	{
 		$this->validateUserProfileUpdateRequest($request);
 
@@ -96,7 +97,7 @@ class UserService
 			}
 
 			$user->name = $request->name;
-			$this->userRepository->save($user);
+			$this->userRepository->update($user);
  
 			Database::commitTransaction();
 

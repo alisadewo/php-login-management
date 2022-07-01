@@ -7,6 +7,8 @@ use Als\Belajar\PHP\MVC\Config\Database;
 use Als\Belajar\PHP\MVC\Domain\User;
 use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Repository\UserRepository; 
+use Als\Belajar\PHP\MVC\Repository\SessionRepository; 
+use Als\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest; 
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest; 
 
@@ -16,14 +18,17 @@ class UserServiceTest extends TestCase
 
 	private UserService $userService;
 	private UserRepository $userRepository;
+	private SessionRepository $sessionRepository;
 
 	protected function setUp(): void
 	{
 		$connection = Database::getConnection();
-		$this->userRepository = new UserRepository($connection);
-		$this->userService = new UserService($this->userRepository);
+        $this->userRepository = new UserRepository($connection);
+        $this->userService = new UserService($this->userRepository);
+        $this->sessionRepository = new SessionRepository($connection);
 
-		$this->userRepository->deleteAll();
+        $this->sessionRepository->deleteAll();
+        $this->userRepository->deleteAll();
 	}
 
 	public function testRegisterSuccess()
@@ -35,14 +40,12 @@ class UserServiceTest extends TestCase
 
 		$response = $this->userService->register($request);
 
-		self::assertEquals($request->id, $response->user->id);
-		self::assertEquals($request->name, $response->user->name);
-		self::assertNotEquals($request->password, $response->user->password);
+        self::assertEquals($request->id, $response->user->id);
+        self::assertEquals($request->name, $response->user->name);
+        self::assertNotEquals($request->password, $response->user->password);
 
-		self::assertTrue(password_verify($request->password, $response->user->password));
-
-
-	}
+        self::assertTrue(password_verify($request->password, $response->user->password));
+    }
 
 	public function testRegisterFailed()
 	{
@@ -119,5 +122,49 @@ class UserServiceTest extends TestCase
 
 		self::assertEquals($request->id, $response->id);
 		self::assertTrue(password_verify($request->password, $response->password));
+	}
+
+	public function testUpdateSuccess()
+	{
+		$user = new User();
+		$user->id = "ali";
+		$user->name = "Ali";
+		$user->password = password_hash("rahasia", PASSWORD_BCRYPT);
+
+		$this->userRepository->save($user);
+
+		$request = new UserProfileUpdateRequest();
+		$request->id = "ali";
+		$request->name = "Budi";
+
+		$this->userService->updateProfile($request);
+
+		$result = $this->userRepository->findById($user->id);
+
+		self::assertEquals($request->name, $result->name);
+
+
+	}
+
+	public function testUpdateValidationError()
+	{
+		$this->expectException(ValidationException::class);
+
+		$request = new UserProfileUpdateRequest();
+		$request->id = "";
+		$request->name = "";
+
+		$this->userService->updateProfile($request);
+	}
+
+	public function testUpdateNotFound()
+	{
+		$this->expectException(ValidationException::class);
+		$request = new UserProfileUpdateRequest();
+		$request->id = "eko";
+		$request->name = "Budi";
+
+		$this->userService->updateProfile($request);
+
 	}
 }

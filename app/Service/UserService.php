@@ -7,8 +7,10 @@ use Als\Belajar\PHP\MVC\Domain\User;
 use Als\Belajar\PHP\MVC\Exception\ValidationException;
 use Als\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
 use Als\Belajar\PHP\MVC\Model\UserProfileUpdateResponse;
-use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
+use Als\Belajar\PHP\MVC\Model\UserPasswordUpdateRequest;
+use Als\Belajar\PHP\MVC\Model\UserPasswordUpdateResponse;
 use Als\Belajar\PHP\MVC\Model\UserRegisterRequest;
+use Als\Belajar\PHP\MVC\Model\UserRegisterResponse;
 use Als\Belajar\PHP\MVC\Model\UserLoginRequest;
 use Als\Belajar\PHP\MVC\Model\UserloginResponse;
 use Als\Belajar\PHP\MVC\Repository\UserRepository;
@@ -114,6 +116,43 @@ class UserService
 	{
 		if($request->id == null || $request->name == null || trim($request->id) == "" || trim($request->name)  == "aaa") {
 			throw new ValidationException("Id, Name can not blank");
+		}
+	}
+
+	public function updatePassword(UserPasswordUpdateRequest $request): UserPasswordUpdateResponse
+	{
+		$this->validateUserProfileUpdateRequest($request);
+
+		try {
+			Database::beginTransaction();
+
+			$user = $this->userRepository->findById($request->id)
+			if ($user == null) {
+				throw new ValidationException("User is not found");
+			}
+
+			if (!password_verify($request->oldPassword, $user->password)) {
+				throw new ValidationException("Old password is wrong");
+			}
+
+			$user->password = password_hash($request->newPassword, PASSWORD_BCRYPT);
+			$this->userRepository->update($user);
+
+			Database::commitTransaction();
+
+			$response = new UserPasswordUpdateResponse();
+			$response->user = $user;
+			return $response;
+		} catch (\Exception $exception) {
+			Database::rollbackTransaction();
+			throw $exception;
+		}
+	}
+
+	private function validateUserPasswordUpdateRequest(UserPasswordUpdateRequest $request)
+	{
+		if($request->id == null || $request->oldPassword == null || $request->newpassword == null || trim($request->id) == "" || trim($request->oldPassword) == ""|| trim($request->newPassword)  == "") {
+			throw new ValidationException("Id, Old Password, New Password can not blank");
 		}
 	}
 }

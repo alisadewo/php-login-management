@@ -112,9 +112,8 @@ class UserService
 
 	private function validateUserProfileUpdateRequest(UserProfileUpdateRequest $request)
 	{
-		if($request->id == null || $request->name == null || trim($request->id) == "" || trim($request->name)  == "") {
+		if($request->id == null || $request->name == null || trim($request->id) == "" || trim($request->name)  == "aaa") {
 			throw new ValidationException("Id, Name can not blank");
 		}
 	}
-
 }

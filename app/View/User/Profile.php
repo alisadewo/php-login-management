@@ -3,7 +3,7 @@
     <?php if(isset($model['error'])) : ?>
         <div class="row">
             <div class="alert alert-danger" role="alert">
-                <?= $model['error'] ?>
+                <?= $model['error']; ?>
             </div>
         </div>
     <?php endif; ?>

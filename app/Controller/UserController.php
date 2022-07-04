@@ -109,16 +109,14 @@ class UserController
 		$request->id = $user->id;
 		$request->name = $_POST['name'];
 
-		$this->userService->updateProfile($request);
-
 		try {
 			$this->userService->updateProfile($request);
 			View::redirect('/');
 		} catch (ValidationException $exception) {
 			View::render('User/profile', [
-				"title" => "Update user profile",
-				"error" => $exception->getMessage(),
-				"user" => [
+				'title' => "Update user profile",
+				'error' => $exception->getMessage(),
+				'user' => [
 					"id" => $user->id,
 					"name" => $_POST['name']
 				]
